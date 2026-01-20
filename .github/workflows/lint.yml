@@ -39,6 +39,6 @@ jobs:
       run: |
         uv run black --check src/ tests/
         
-    - name: Run mypy
+    - name: Run ty
       run: |
-        uv run mypy src/ --ignore-missing-imports --show-error-codes --pretty
+        uv run ty check src/

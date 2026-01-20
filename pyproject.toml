@@ -36,6 +36,14 @@ ignore = []
 line-length = 88
 target-version = ["py311"]
 
+[tool.ty.src]
+exclude = ["tests/"]
+
+[tool.ty.rules]
+# pyscardや標準ライブラリの型スタブ不足を無視
+unresolved-import = "ignore"
+unresolved-attribute = "ignore"
+
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
