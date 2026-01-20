@@ -11,7 +11,7 @@ SONY RC-S300 NFCカードリーダー用のバックエンドAPI。Windows11お�
 - **NFC通信**: pyscard（PC/SC API）
 - **データ検証**: Pydantic 2.x, pydantic-settings
 - **環境変数**: python-dotenv
-- **開発ツール**: Black, Ruff, pytest, ty, mypy
+- **開発ツール**: Black, Ruff, pytest, ty
 
 ## プロジェクト構造
 ```
