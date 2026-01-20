@@ -12,7 +12,7 @@ SONY RC-S300 NFCカードリーダー用のバックエンドAPI。Windows11お�
 
 - Python 3.11
 - FastAPI
-- nfcpy
+- pyscard（PC/SC API）
 - Pydantic 2.x
 
 ## セットアップ
@@ -37,26 +37,26 @@ cp .env.example .env
 # 特にADMIN_PASSWORDは本番環境では必ず変更してください
 ```
 
-### 3. OS別ドライバ設定
+### 3. OS別セットアップ
 
 #### Windows 11
 
-1. [Zadig](https://zadig.akeo.ie/)をダウンロード
-2. RC-S300を接続
-3. Zadigで**WinUSB**ドライバをインストール
-4. `libusb-1.0.dll`をPython実行環境にコピー
+**追加のドライバインストールは不要です！**
+PC/SC API（pyscard）を使用するため、Windowsの標準スマートカードサービスで動作します。
 
 #### Raspberry Pi 5
 
 ```bash
-# udevルールを追加
-sudo sh -c 'echo SUBSYSTEM=="usb", ACTION=="add", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="06c1", GROUP="plugdev" >> /etc/udev/rules.d/nfcdev.rules'
-sudo udevadm control --reload-rules
+# pcscdとlibpcscliteをインストール
+sudo apt-get update
+sudo apt-get install -y pcscd libpcsclite-dev
 
-# ユーザーをplugdevグループに追加
-sudo usermod -aG plugdev $USER
+# pcscdサービスを起動
+sudo systemctl enable pcscd
+sudo systemctl start pcscd
 
-# 再ログインまたは再起動
+# 接続確認
+pcsc_scan
 ```
 
 ## 起動
@@ -88,7 +88,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 | 変数名 | 説明 | デフォルト値 |
 |--------|------|-------------|
-| `NFC_DEVICE_PATH` | NFCデバイスパス | `usb:054c:06c1` |
+| `NFC_DEVICE_PATH` | （PC/SC使用のため不要） | `usb:054c:0dc8` |
 | `USER_DATA_CSV_PATH` | ユーザーCSVファイルパス | `data/users.csv` |
 | `MAX_SCAN_BUFFER_SIZE` | 常時読み取りバッファ上限 | `100` |
 | `LOG_DIR` | ログ出力ディレクトリ | `logs` |

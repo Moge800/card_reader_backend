@@ -2,6 +2,7 @@
 
 SONY RC-S300 NFCカードリーダーの操作を行う。
 シングルトンパターンで実装し、常時読み取りモードをサポートする。
+PC/SC API（pyscard）を使用し、ドライバ変更不要で動作する。
 """
 
 import random
@@ -18,12 +19,16 @@ logger = get_logger(__name__)
 DEFAULT_SCAN_TIMEOUT = 5.0
 CONTINUOUS_SCAN_INTERVAL = 0.5
 
+# PC/SC APDUコマンド
+GET_UID_COMMAND = [0xFF, 0xCA, 0x00, 0x00, 0x00]
+
 
 class NFCReader:
     """NFCリーダー操作クラス（シングルトン）。
 
     単発読み取りと常時読み取りモードをサポートする。
     常時読み取りモードでは、連続して同じカードを読み取った場合は無視する。
+    PC/SC APIを使用してカードを読み取る。
     """
 
     _instance: "NFCReader | None" = None
@@ -67,10 +72,10 @@ class NFCReader:
         if self._settings.debug_mode:
             return self._generate_dummy_uid()
 
-        return self._read_card_nfcpy(timeout)
+        return self._read_card_pcsc(timeout)
 
-    def _read_card_nfcpy(self, timeout: float) -> str | None:
-        """nfcpyを使用してカードを読み取る。
+    def _read_card_pcsc(self, timeout: float) -> str | None:
+        """PC/SC APIを使用してカードを読み取る。
 
         Args:
             timeout: 読み取りタイムアウト秒数
@@ -79,32 +84,37 @@ class NFCReader:
             str | None: カードのUID（16進数文字列）、タイムアウト時はNone
         """
         try:
-            import nfc
+            from smartcard.CardRequest import CardRequest
+            from smartcard.CardType import AnyCardType
+            from smartcard.Exceptions import CardRequestTimeoutException
+            from smartcard.util import toHexString
 
-            uid_hex: str | None = None
+            cardtype = AnyCardType()
+            cardrequest = CardRequest(timeout=timeout, cardType=cardtype)
 
-            def on_connect(tag: nfc.tag.Tag) -> bool:
-                nonlocal uid_hex
-                uid_hex = tag.identifier.hex()
-                logger.info(f"Card read: {uid_hex}")
-                return True
+            try:
+                cardservice = cardrequest.waitforcard()
+                cardservice.connection.connect()
 
-            with nfc.ContactlessFrontend(self._settings.nfc_device_path) as clf:
-                # タイムアウト付きで接続を試みる
-                start_time = time.time()
-                while uid_hex is None and (time.time() - start_time) < timeout:
-                    clf.connect(
-                        rdwr={"on-connect": on_connect},
-                        terminate=lambda: (time.time() - start_time) >= timeout,
-                    )
-                    if uid_hex:
-                        break
-                    time.sleep(0.1)
+                # Get UID command (APDU)
+                data, sw1, sw2 = cardservice.connection.transmit(GET_UID_COMMAND)
 
-            return uid_hex
+                uid_hex: str | None = None
+                if sw1 == 0x90 and sw2 == 0x00:
+                    uid_hex = toHexString(data).replace(" ", "").lower()
+                    logger.info(f"Card read: {uid_hex}")
+                else:
+                    logger.warning(f"Failed to get UID: SW1={hex(sw1)}, SW2={hex(sw2)}")
+
+                cardservice.connection.disconnect()
+                return uid_hex
+
+            except CardRequestTimeoutException:
+                logger.debug("Card read timeout - no card detected")
+                return None
 
         except ImportError:
-            logger.error("nfcpy is not installed")
+            logger.error("pyscard is not installed")
             return None
         except OSError as e:
             logger.error(f"NFC device connection failed: {e}")

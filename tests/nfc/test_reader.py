@@ -151,8 +151,8 @@ class TestNFCReader:
         assert reader.buffer_size == 4
 
 
-class TestNFCReaderWithNfcpy:
-    """nfcpyを使用したテスト（モック使用）。"""
+class TestNFCReaderWithPCSC:
+    """PC/SC API（pyscard）を使用したテスト（モック使用）。"""
 
     @pytest.fixture(autouse=True)
     def reset_singleton(self):
@@ -163,18 +163,18 @@ class TestNFCReaderWithNfcpy:
         yield
         NFCReader._instance = None
 
-    def test_read_card_nfcpy_import_error(self) -> None:
-        """nfcpyがインストールされていない場合はNoneを返す。"""
+    def test_read_card_pcsc_import_error(self) -> None:
+        """pyscardがインストールされていない場合はNoneを返す。"""
         with patch("src.nfc.reader.get_settings") as mock_settings:
             mock_settings.return_value.debug_mode = False
             mock_settings.return_value.max_scan_buffer_size = 10
-            mock_settings.return_value.nfc_device_path = "usb:054c:06c1"
+            mock_settings.return_value.nfc_device_path = "usb:054c:0dc8"
 
             from src.nfc.reader import get_nfc_reader
 
             reader = get_nfc_reader()
 
-            # _read_card_nfcpyメソッドをモックしてImportErrorをシミュレート
-            with patch.object(reader, "_read_card_nfcpy", return_value=None):
+            # _read_card_pcscメソッドをモックしてImportErrorをシミュレート
+            with patch.object(reader, "_read_card_pcsc", return_value=None):
                 result = reader.read_single()
                 assert result is None
