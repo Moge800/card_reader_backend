@@ -22,8 +22,8 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    # NFC設定
-    nfc_device_path: str = "usb:054c:06c1"
+    # NFC設定（PC/SC APIを使用するため、この設定は参考値）
+    nfc_device_path: str = "usb:054c:0dc8"
 
     # データ設定
     user_data_csv_path: Path = Path("data/users.csv")

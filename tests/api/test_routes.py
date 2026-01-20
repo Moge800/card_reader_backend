@@ -101,7 +101,7 @@ class TestUserEndpoints:
 
     def test_lookup_user_found(self, test_client: TestClient) -> None:
         """ユーザーが見つかった場合にデータが返される。"""
-        with patch("src.api.routes.lookup_user") as mock_lookup:
+        with patch("src.api.routes.lookup_user_from_csv") as mock_lookup:
             from src.schemas.models import UserData
 
             mock_lookup.return_value = UserData(
@@ -123,7 +123,7 @@ class TestUserEndpoints:
 
     def test_lookup_user_not_found(self, test_client: TestClient) -> None:
         """ユーザーが見つからない場合はfoundがFalse。"""
-        with patch("src.api.routes.lookup_user") as mock_lookup:
+        with patch("src.api.routes.lookup_user_from_csv") as mock_lookup:
             mock_lookup.return_value = None
 
             response = test_client.post("/user/lookup", json={"uid_hex": "nonexistent"})
@@ -134,7 +134,7 @@ class TestUserEndpoints:
 
     def test_register_user_new(self, test_client: TestClient) -> None:
         """新規ユーザーを登録できる。"""
-        with patch("src.api.routes.register_user") as mock_register:
+        with patch("src.api.routes.register_user_to_csv") as mock_register:
             mock_register.return_value = False  # 新規登録
 
             response = test_client.post(
@@ -155,7 +155,7 @@ class TestUserEndpoints:
 
     def test_register_user_update(self, test_client: TestClient) -> None:
         """既存ユーザーを上書き更新できる。"""
-        with patch("src.api.routes.register_user") as mock_register:
+        with patch("src.api.routes.register_user_to_csv") as mock_register:
             mock_register.return_value = True  # 上書き更新
 
             response = test_client.post(
@@ -177,7 +177,7 @@ class TestUserEndpoints:
     def test_delete_user_success(self, test_client: TestClient) -> None:
         """正しいパスワードでユーザーを削除できる。"""
         with (
-            patch("src.api.routes.delete_user") as mock_delete,
+            patch("src.api.routes.delete_user_from_csv") as mock_delete,
             patch("src.api.routes.get_settings") as mock_settings,
         ):
             mock_delete.return_value = True
@@ -207,7 +207,7 @@ class TestUserEndpoints:
     def test_delete_user_not_found(self, test_client: TestClient) -> None:
         """ユーザーが見つからない場合はsuccessがFalse。"""
         with (
-            patch("src.api.routes.delete_user") as mock_delete,
+            patch("src.api.routes.delete_user_from_csv") as mock_delete,
             patch("src.api.routes.get_settings") as mock_settings,
         ):
             mock_delete.return_value = False

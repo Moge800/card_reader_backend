@@ -20,7 +20,15 @@ from src.schemas.models import (
     UserRegisterRequest,
     UserRegisterResponse,
 )
-from src.services.user_service import delete_user, lookup_user, register_user
+from src.services.user_service import (
+    delete_user as delete_user_from_csv,
+)
+from src.services.user_service import (
+    lookup_user as lookup_user_from_csv,
+)
+from src.services.user_service import (
+    register_user as register_user_to_csv,
+)
 
 logger = get_logger(__name__)
 
@@ -127,7 +135,7 @@ def lookup_user_by_uid(request: UserLookupRequest) -> UserLookupResponse:
 
     CSVファイルから該当するユーザーを検索して返却する。
     """
-    user = lookup_user(request.uid_hex)
+    user = lookup_user_from_csv(request.uid_hex)
 
     if user:
         return UserLookupResponse(
@@ -158,7 +166,7 @@ def register_new_user(request: UserRegisterRequest) -> UserRegisterResponse:
         description=request.description,
     )
 
-    is_update = register_user(user)
+    is_update = register_user_to_csv(user)
 
     if is_update:
         return UserRegisterResponse(
@@ -190,7 +198,7 @@ def delete_existing_user(request: UserDeleteRequest) -> UserDeleteResponse:
             detail="Invalid admin password",
         )
 
-    success = delete_user(request.uid_hex)
+    success = delete_user_from_csv(request.uid_hex)
 
     if success:
         return UserDeleteResponse(
