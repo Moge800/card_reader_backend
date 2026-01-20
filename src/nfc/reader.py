@@ -33,6 +33,7 @@ class NFCReader:
 
     _instance: "NFCReader | None" = None
     _lock: threading.Lock = threading.Lock()
+    _initialized: bool = False
 
     def __new__(cls) -> "NFCReader":
         """シングルトンインスタンスを取得する。"""

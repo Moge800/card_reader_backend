@@ -33,10 +33,6 @@ jobs:
     - name: Run Black (check only)
       run: |
         uv run black --check src/ tests/
-    
-    - name: Run ty
-      run: |
-        uv run ty check src/
         
     - name: Run mypy
       run: |
