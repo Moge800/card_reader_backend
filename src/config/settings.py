@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     # デバッグモード
     debug_mode: bool = False
 
+    # サーバー設定
+    server_host: str = "0.0.0.0"
+    server_port: int = 8000
+
 
 @lru_cache
 def get_settings() -> Settings:

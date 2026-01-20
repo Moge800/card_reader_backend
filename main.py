@@ -20,10 +20,12 @@ import uvicorn
 from fastapi import FastAPI
 
 from src.api.routes import router
+from src.config.settings import get_settings
 from src.logging.logger import get_logger
 from src.services.user_service import _ensure_csv_file
 
 logger = get_logger(__name__)
+settings = get_settings()
 
 
 @asynccontextmanager
@@ -68,10 +70,10 @@ def main() -> None:
     """メイン関数。Uvicornサーバーを起動する。"""
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info",
+        host=settings.server_host,
+        port=settings.server_port,
+        reload=settings.debug_mode,
+        log_level=settings.log_level.lower(),
     )
 
 
