@@ -1,0 +1,41 @@
+[project]
+name = "card-reader-backend"
+version = "0.1.0"
+description = "SONY RC-S300 NFCカードリーダー用バックエンドAPI"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "nfcpy>=1.0.4",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=24.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "ty>=0.0.1a6",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+]
